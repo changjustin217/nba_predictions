@@ -1,0 +1,54 @@
+---
+title: "nba_modelling"
+author: "Justin Chang"
+date: "February 25, 2018"
+output: pdf_document
+---
+
+```{r}
+team = read.csv("team.csv",header = TRUE)
+team = team[order(team$Team),]
+team
+opponents = read.csv("opponents.csv",header=TRUE)
+opponents = opponents[order(opponents$Team),]
+opponents
+```
+
+```{r}
+total = team-opponents
+total[1] = team[1]
+total[2] = total[2]*100
+total[3] = total[3]*100
+total[4] = total[4]*100
+total[5] = total[5]*100
+total = total[-8]
+total[11] = -total[11]
+total
+```
+
+```{r}
+weights = c(1,2,1.5,1,2.5,2,1.5,2,2,3,3)
+calcScore = total[-1]
+for(ii in 1:11){
+  calcScore[ii] = total[ii+1]*weights[ii]
+}
+calcScore
+```
+
+```{r}
+total["Score"] = rowSums(calcScore)
+total["Score"] = total["Score"]-min(total["Score"])+75
+total
+```
+
+```{r}
+mean(total$Score)
+```
+
+```{r}
+score = total[,c(1,13)]
+y = data.frame(Team=score[1],Score = score[2])
+barplot(y$Score, names.arg=y$Team,main= "Team Scores")
+```
+
+Model: Probability of Home team win = (Home Team Score/(Home Team Score + Away Team Score))+((1-Home Team Score/(Home Team Score + Away Team Score))*0.25)
