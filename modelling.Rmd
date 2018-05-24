@@ -6,10 +6,10 @@ output: pdf_document
 ---
 
 ```{r}
-team = read.csv("team.csv",header = TRUE)
+team = read.csv("team2.csv",header = TRUE)
 team = team[order(team$Team),]
 team
-opponents = read.csv("opponents.csv",header=TRUE)
+opponents = read.csv("opponents2.csv",header=TRUE)
 opponents = opponents[order(opponents$Team),]
 opponents
 ```
@@ -20,16 +20,15 @@ total[1] = team[1]
 total[2] = total[2]*100
 total[3] = total[3]*100
 total[4] = total[4]*100
-total[5] = total[5]*100
-total = total[-8]
-total[11] = -total[11]
+total[6] = total[6]*100
+total[12] = -total[12]
 total
 ```
 
 ```{r}
-weights = c(1,2,1.5,1,2.5,2,1.5,2,2,3,3)
+weights = c(1,2,1.5,1,1,2.5,2,1.5,2,2,3,3.5)
 calcScore = total[-1]
-for(ii in 1:11){
+for(ii in 1:12){
   calcScore[ii] = total[ii+1]*weights[ii]
 }
 calcScore
@@ -37,7 +36,7 @@ calcScore
 
 ```{r}
 total["Score"] = rowSums(calcScore)
-total["Score"] = total["Score"]-min(total["Score"])+75
+total["Score"] = total["Score"]-min(total["Score"])+18
 total
 ```
 
@@ -46,9 +45,43 @@ mean(total$Score)
 ```
 
 ```{r}
-score = total[,c(1,13)]
+score = total[,c(1,14)]
 y = data.frame(Team=score[1],Score = score[2])
 barplot(y$Score, names.arg=y$Team,main= "Team Scores")
 ```
 
+```{r}
+total<-total[order(total$Score),]
+total
+```
+
 Model: Probability of Home team win = (Home Team Score/(Home Team Score + Away Team Score))+((1-Home Team Score/(Home Team Score + Away Team Score))*0.25)
+
+```{r}
+res = matrix(nrow=30,ncol=29)
+overall = matrix(nrow=30,ncol=29)
+for(i in 1:30){
+  skip = FALSE
+  for(j in 1:30){
+    if(i!=j){
+      if(skip==TRUE){
+        res[i,j-1] = total[i,"Score"]/(total[i,"Score"]+total[j,"Score"])+((1-total[i,"Score"]/(total[i,"Score"]+total[j,"Score"]))/6)
+      overall[i,j-1] = total[i,"Score"]/(total[i,"Score"]+total[j,"Score"])
+      }
+      else{
+        res[i,j] = total[i,"Score"]/(total[i,"Score"]+total[j,"Score"])+((1-total[i,"Score"]/(total[i,"Score"]+total[j,"Score"]))/6)
+        overall[i,j] = total[i,"Score"]/(total[i,"Score"]+total[j,"Score"])
+      }
+    }
+    else{
+      skip = TRUE
+    }
+  }
+}
+```
+
+```{r}
+apply(overall,1,mean)
+```
+
+
